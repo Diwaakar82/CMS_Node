@@ -93,7 +93,7 @@ const updatePost = (req, res) => {
             connection.query("INSERT INTO CATEGORIES_POSTS VALUES ?", [categoryInsertValues], (err) => {
                 if(err)
                 {
-                    console.log('Error inserting post:', err);
+                    console.log('Error updating post:', err);
                     res.status(500).send('Internal Server Error');
                 }
             });
@@ -112,7 +112,7 @@ const deletePost = (req, res) => {
     connection.query("DELETE FROM COMMENTS WHERE post_id = ?", [postId], (err, result) => {
         if(err)
         {
-            console.log(err);
+            console.log("Error: deleting post comments", err);
             res.status(500).send('Internal Server Error');
         }
     });
@@ -120,7 +120,7 @@ const deletePost = (req, res) => {
     connection.query("DELETE FROM CATEGORIES_POSTS WHERE post_id = ?", [postId], (err, result) => {
         if(err)
         {
-            console.log(err);
+            console.log("Error: deleting join table", err);
             res.status(500).send('Internal Server Error');
         }
     });
@@ -128,7 +128,7 @@ const deletePost = (req, res) => {
     connection.query("DELETE FROM POSTS WHERE id = ?", [postId], (err, result) => {
         if(err)
         {
-            console.log("Error: getting post");
+            console.log("Error: deleting post", err);
             res.status(500).send('Internal Server Error');
         }
         else
