@@ -66,7 +66,7 @@ const getPost = (req, res) => {
             return;
         }
 
-        connection.query("SELECT commenter, text FROM COMMENTS WHERE id = ?", [postId], (err, comments) => {
+        connection.query("SELECT commenter, text FROM COMMENTS WHERE post_id = ?", [postId], (err, comments) => {
             if(err)
             {
                 console.log("Error: getting comments");
@@ -154,4 +154,75 @@ const deletePost = (req, res) => {
     });
 };
 
-module.exports = { getPosts, createPost, getPost, updatePost, deletePost };
+//@desc Create comment
+//@route POST /posts/:post_id/comments
+//@access public
+const createComment = (req, res) => {
+    const { commenter, text } = req.body;
+    const postId = req.params.post_id;
+
+    connection.query("INSERT INTO COMMENTS (commenter, text, post_id) VALUES (?, ?, ?)", [commenter, text, postId], (err, result) => {
+        if(err)
+        {
+            console.log('Error creating comment:', err);
+            res.status(500).send('Internal Server Error');
+        }
+
+        res.status(200).json(result);
+    });
+};
+
+//@desc Get comment
+//@route GET /posts/:post_id/comments/:id
+//@access public
+const getComment = (req, res) => {
+    const commentId = req.params.id;
+    const postId = req.params.post_id;
+
+    connection.query("SELECT commenter, text FROM COMMENTS WHERE id = ? AND post_id = ?", [commentId, postId], (err, result) => {
+        if(err)
+        {
+            console.log('Error getting comment:', err);
+            res.status(500).send('Internal Server Error');
+        }
+
+        res.status(200).json(result);
+    });
+};
+
+//@desc Update comment
+//@route PUT/PATCH /posts/:post_id/comments/:id
+//@access public
+const updateComment = (req, res) => {
+    const commentId = req.params.id;
+    const { commenter, text } = req.body;
+
+    connection.query("UPDATE COMMENTS SET commenter = ?, text = ? WHERE id = ?", [commenter, text, commentId], (err, result) => {
+        if(err)
+        {
+            console.log('Error updating comment:', err);
+            res.status(500).send('Internal Server Error');
+        }
+
+        res.status(200).json(result);
+    });
+};
+
+//@desc Delete comment
+//@route DELETE /posts/:post_id/comments/:id
+//@access public
+const deleteComment = (req, res) => {
+    const commentId = req.params.id;
+
+    connection.query("DELETE FROM COMMENTS WHERE id = ?", [commentId], (err, result) => {
+        if(err)
+        {
+            console.log('Error deleting comment:', err);
+            res.status(500).send('Internal Server Error');
+        }
+
+        res.status(200).json(result);
+    });
+};
+
+module.exports = { getPosts, createPost, getPost, updatePost, deletePost, createComment, getComment, updateComment, deleteComment };

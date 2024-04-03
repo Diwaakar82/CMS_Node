@@ -4,7 +4,7 @@ const { getPosts, createPost, getPost, updatePost, deletePost, createComment, ge
 
 router.route("/").get(getPosts).post(createPost);
 router.route("/:id").get(getPost).put(updatePost).patch(updatePost).delete(deletePost);
-// router.route("/:post_id/comments").post(createComment);
-// router.route("/:post_id/comments/:id").get(getComment).put(updateComment).patch(updateComment).delete(deleteComment);
+router.route("/:post_id/comments").post(createComment);
+router.route("/:post_id/comments/:id").get(getComment).put(updateComment).patch(updateComment).delete(deleteComment);
 
 module.exports = router;
