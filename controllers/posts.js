@@ -32,7 +32,7 @@ const createPost = (req, res) => {
 
         if (category_ids && category_ids.length > 0)
         {
-            const categoryInsertValues = category_ids.map(categoryId => [postId, categoryId]);
+            const categoryInsertValues = category_ids.map(categoryId => [categoryId, postId]);
 
             connection.query("INSERT INTO CATEGORIES_POSTS VALUES ?", [categoryInsertValues], (err) => {
                 if(err)
@@ -64,4 +64,43 @@ const getPost = (req, res) => {
     });
 };
 
-module.exports = { getPosts, createPost, getPost };
+//@desc Update post
+//@route PATCH /posts/:id
+//@access public
+const updatePost = (req, res) => {
+    const postId = req.params.id;
+    const { title, description, category_ids } = req.body;
+
+    connection.query("UPDATE POSTS SET title = ?, description = ? WHERE id = ?", [title, description, postId], (err, result) => {
+        if(err)
+        {
+            console.log("Error: updating post");
+            res.status(500).send('Internal Server Error');
+        }
+
+        connection.query("DELETE FROM CATEGORIES_POSTS WHERE post_id = ?", [postId], (err, result) => {
+            if(err)
+            {
+                console.log("Error: updating post");
+                res.status(500).send('Internal Server Error');
+            }
+        });
+
+        if (category_ids && category_ids.length > 0)
+        {
+            const categoryInsertValues = category_ids.map(categoryId => [categoryId, postId]);
+
+            connection.query("INSERT INTO CATEGORIES_POSTS VALUES ?", [categoryInsertValues], (err) => {
+                if(err)
+                {
+                    console.log('Error inserting post:', err);
+                    res.status(500).send('Internal Server Error');
+                }
+            });
+        }
+
+        res.status(200).json(result);
+    });
+};
+
+module.exports = { getPosts, createPost, getPost, updatePost };
