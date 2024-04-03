@@ -4,9 +4,12 @@ const connection = require("../models/db.js");
 //@route GET /posts
 // @access public
 const getPosts = (req, res) => {
-    connection.query("SELECT * FROM posts", (err, results) => {
+    connection.query("SELECT * FROM POSTS", (err, results) => {
         if(err)
-            console.log("Error");
+        {
+            console.log("Error: getting posts");
+            res.status(500).send('Internal Server Error');
+        }
         else
             res.status(200).json(results);
     });
@@ -37,11 +40,28 @@ const createPost = (req, res) => {
                     console.log('Error inserting post:', err);
                     res.status(500).send('Internal Server Error');
                 }
-            })
+            });
         }
 
         res.status(200).json(result);
-    })
-}
+    });
+};
 
-module.exports = { getPosts, createPost };
+//@desc Show post
+//@route GET /posts/:id
+//@access public
+const getPost = (req, res) => {
+    const postId = req.params.id;
+
+    connection.query("SELECT * FROM POSTS WHERE id = ?", [postId], (err, result) => {
+        if(err)
+        {
+            console.log("Error: getting post");
+            res.status(500).send('Internal Server Error');
+        }
+        else
+            res.status(200).json(result);
+    });
+};
+
+module.exports = { getPosts, createPost, getPost };
