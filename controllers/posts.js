@@ -103,10 +103,21 @@ const updatePost = (req, res) => {
     });
 };
 
+//@desc Delete post
+//@route DELETE /posts/:id
+//@access public
 const deletePost = (req, res) => {
     const postId = req.params.id;
 
     connection.query("DELETE FROM COMMENTS WHERE post_id = ?", [postId], (err, result) => {
+        if(err)
+        {
+            console.log(err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+
+    connection.query("DELETE FROM CATEGORIES_POSTS WHERE post_id = ?", [postId], (err, result) => {
         if(err)
         {
             console.log(err);
