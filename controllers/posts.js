@@ -103,4 +103,26 @@ const updatePost = (req, res) => {
     });
 };
 
-module.exports = { getPosts, createPost, getPost, updatePost };
+const deletePost = (req, res) => {
+    const postId = req.params.id;
+
+    connection.query("DELETE FROM COMMENTS WHERE post_id = ?", [postId], (err, result) => {
+        if(err)
+        {
+            console.log(err);
+            res.status(500).send('Internal Server Error');
+        }
+    });
+
+    connection.query("DELETE FROM POSTS WHERE id = ?", [postId], (err, result) => {
+        if(err)
+        {
+            console.log("Error: getting post");
+            res.status(500).send('Internal Server Error');
+        }
+        else
+            res.status(200).json(result);
+    });
+};
+
+module.exports = { getPosts, createPost, getPost, updatePost, deletePost };
