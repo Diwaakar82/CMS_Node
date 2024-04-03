@@ -59,8 +59,26 @@ const getPost = (req, res) => {
             console.log("Error: getting post");
             res.status(500).send('Internal Server Error');
         }
-        else
+
+        if (!result.length) {
+            // If no post is found with the given id, return an appropriate error response
+            res.status(404).json({ error: "Post not found" });
+            return;
+        }
+
+        connection.query("SELECT commenter, text FROM COMMENTS WHERE id = ?", [postId], (err, comments) => {
+            if(err)
+            {
+                console.log("Error: getting comments");
+                res.status(500).send('Internal Server Error');
+            }
+
+            if(comments.length)
+            {
+                result[0]["comments"] = comments;
+            }
             res.status(200).json(result);
+        });
     });
 };
 
