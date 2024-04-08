@@ -8,7 +8,7 @@ app.use(express.json());
 app.use("/users", require("./routes/users.js"))
 app.use("/posts", require("./routes/posts.js"));
 app.use("/categories", require("./routes/categories.js"));
-// app.use("/posts", require("./controllers/posts.js"));
+app.use("/posts", require("./routes/likes.js"));
 
 app.listen(port, () => {
     console.log(`Server running at ${port}`);

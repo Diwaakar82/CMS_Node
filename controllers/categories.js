@@ -2,7 +2,7 @@ const connection = require("../models/db.js");
 
 //@desc Show categories
 //@route GET /categories
-// @access public
+//@access public
 const getCategories = (req, res) => {
     connection.query("SELECT * FROM CATEGORIES", (err, results) => {
         if(err)

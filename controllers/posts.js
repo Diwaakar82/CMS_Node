@@ -2,7 +2,7 @@ const connection = require("../models/db.js");
 
 //@desc Show posts
 //@route GET /posts
-// @access public
+//@access public
 const getPosts = (req, res) => {
     connection.query("SELECT * FROM POSTS", (err, results) => {
         if(err)

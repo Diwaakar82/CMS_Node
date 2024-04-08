@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const genAccessToken = (email, userId, username) => {
     const payload = {email: email, userId: userId, username: username};
     return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-}
+};
 
 const validateToken = (req, res, next) => {
     let token;
