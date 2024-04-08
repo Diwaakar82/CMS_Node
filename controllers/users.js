@@ -1,6 +1,6 @@
 const connection = require("../models/db.js");
 const bcrypt = require("bcrypt");
-const generateAccessToken = require("../middlewares/generateAccessToken.js")
+const { genAccessToken } = require("../middlewares/generateAccessToken.js")
 
 //@desc Create user
 //@route POST /users/signin
@@ -61,7 +61,7 @@ const login = (req, res) => {
 
             if(await bcrypt.compare(password, hashedPassword))
             {
-                const token = generateAccessToken({email: email});
+                const token = genAccessToken(email, result[0].userId);
                 res.json({accessToken: token});
             }
             else
@@ -76,7 +76,24 @@ const login = (req, res) => {
 //@route GET /users/current
 // @access private
 const current_user = (req, res) => {
+    const email = req.body.email;
+    
+    connection.query("SELECT * FROM USERS WHERE email = ?", [email], async(err, result) => {
+        if(err)
+        {
+            console.log("Error: getting user id");
+            res.status(500).send('Internal Server Error');
+        }
+
+        res.json(result);
+    });
+};
+
+//@desc Update current user
+//@route PUT/PATCH /users/current
+// @access private
+const update_user = (req, res) => {
 
 };
 
-module.exports = { signin, login, current_user };
+module.exports = { signin, login, current_user, update_user };

@@ -17,11 +17,16 @@ const getPosts = (req, res) => {
 
 //@desc Create post
 //@route POST /posts
-//@access public
+//@access private
 const createPost = (req, res) => {
     const { title, description, category_ids } = req.body;
 
-    connection.query("INSERT INTO POSTS (title, description) VALUES (?, ?)", [title, description], (err, result) => {
+    if(!title || !description)
+    {
+        res.status(400).send("All fields mandatory");
+    }
+
+    connection.query("INSERT INTO POSTS (title, description, userId) VALUES (?, ?, ?)", [title, description, req.user.userId], (err, result) => {
         if(err)
         {
             console.log('Error inserting post:', err);
@@ -84,46 +89,66 @@ const getPost = (req, res) => {
 
 //@desc Update post
 //@route PATCH /posts/:id
-//@access public
+//@access private
 const updatePost = (req, res) => {
     const postId = req.params.id;
     const { title, description, category_ids } = req.body;
 
-    connection.query("UPDATE POSTS SET title = ?, description = ? WHERE id = ?", [title, description, postId], (err, result) => {
+    connection.query("SELECT * FROM POSTS WHERE id = ?", [postId], (err, result) => {
         if(err)
         {
             console.log("Error: updating post");
             res.status(500).send('Internal Server Error');
+            return;
         }
 
-        connection.query("DELETE FROM CATEGORIES_POSTS WHERE post_id = ?", [postId], (err, result) => {
+        if(result[0] && result[0].userId !== req.user.userId)
+        {
+            res.status(403).send("User can't update other user posts");
+            return;
+        }
+
+        connection.query("UPDATE POSTS SET title = ?, description = ? WHERE id = ?", [title, description, postId], (err, result) => {
             if(err)
             {
                 console.log("Error: updating post");
                 res.status(500).send('Internal Server Error');
+                return;
             }
-        });
-
-        if (category_ids && category_ids.length > 0)
-        {
-            const categoryInsertValues = category_ids.map(categoryId => [categoryId, postId]);
-
-            connection.query("INSERT INTO CATEGORIES_POSTS VALUES ?", [categoryInsertValues], (err) => {
+    
+            connection.query("DELETE FROM CATEGORIES_POSTS WHERE post_id = ?", [postId], (err, result) => {
                 if(err)
                 {
-                    console.log('Error updating post:', err);
+                    console.log("Error: updating post");
                     res.status(500).send('Internal Server Error');
+                    return;
                 }
             });
-        }
-
-        res.status(200).json(result);
+    
+            if (category_ids && category_ids.length > 0)
+            {
+                const categoryInsertValues = category_ids.map(categoryId => [categoryId, postId]);
+    
+                connection.query("INSERT INTO CATEGORIES_POSTS VALUES ?", [categoryInsertValues], (err) => {
+                    if(err)
+                    {
+                        console.log('Error updating post:', err);
+                        res.status(500).send('Internal Server Error');
+                        return;
+                    }
+                });
+            }
+    
+            res.status(200).json(result);
+        });
     });
+
+    
 };
 
 //@desc Delete post
 //@route DELETE /posts/:id
-//@access public
+//@access private
 const deletePost = (req, res) => {
     const postId = req.params.id;
 
@@ -156,7 +181,7 @@ const deletePost = (req, res) => {
 
 //@desc Create comment
 //@route POST /posts/:post_id/comments
-//@access public
+//@access private
 const createComment = (req, res) => {
     const { commenter, text } = req.body;
     const postId = req.params.post_id;
@@ -192,7 +217,7 @@ const getComment = (req, res) => {
 
 //@desc Update comment
 //@route PUT/PATCH /posts/:post_id/comments/:id
-//@access public
+//@access private
 const updateComment = (req, res) => {
     const commentId = req.params.id;
     const { commenter, text } = req.body;
@@ -210,7 +235,7 @@ const updateComment = (req, res) => {
 
 //@desc Delete comment
 //@route DELETE /posts/:post_id/comments/:id
-//@access public
+//@access private
 const deleteComment = (req, res) => {
     const commentId = req.params.id;
 
