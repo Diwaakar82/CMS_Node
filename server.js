@@ -7,6 +7,7 @@ const port = process.env.PORT || 5000;
 app.use(express.json());
 app.use("/posts", require("./routes/posts.js"));
 app.use("/categories", require("./routes/categories.js"));
+app.use("/users", require("./routes/users.js"))
 // app.use("/posts", require("./controllers/posts.js"));
 
 app.listen(port, () => {

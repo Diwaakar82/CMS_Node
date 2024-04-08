@@ -60,8 +60,8 @@ const getPost = (req, res) => {
             res.status(500).send('Internal Server Error');
         }
 
-        if (!result.length) {
-            // If no post is found with the given id, return an appropriate error response
+        if (!result.length) 
+        {
             res.status(404).json({ error: "Post not found" });
             return;
         }
