@@ -10,8 +10,10 @@ const getCategories = (req, res) => {
             console.log("Error: getting categories");
             res.status(500).send('Internal Server Error');
         }
-        else
+        else if(results.length)
             res.status(200).json(results);
+        else
+        res.status(404).send("No category found");
     });
 };
 
@@ -44,8 +46,10 @@ const getCategory = (req, res) => {
             console.log('Error displaying category:', err);
             res.status(500).send('Internal Server Error');
         }
-        else
+        else if(result.length)
             res.status(200).json(result);
+        else
+            res.status(404).send("No posts in category");
     });
 };
 
@@ -62,8 +66,10 @@ const updateCategory = (req, res) => {
             console.log('Error updating category:', err);
             res.status(500).send('Internal Server Error');
         }
-        else
+        else if(result.affectedRows)
             res.status(200).json(result);
+        else
+            res.status(404).send("No categories updated");
     });
 };
 
@@ -79,16 +85,20 @@ const deleteCategory = (req, res) => {
             console.log("Error: deleting join table", err);
             res.status(500).send('Internal Server Error');
         }
-    });
-
-    connection.query("DELETE FROM CATEGORIES WHERE id = ?", [categoryId], (err, result) => {
-        if(err)
-        {
-            console.log("Error: deleting post", err);
-            res.status(500).send('Internal Server Error');
-        }
         else
-            res.status(200).json(result);
+        {
+            connection.query("DELETE FROM CATEGORIES WHERE id = ?", [categoryId], (err, result) => {
+                if(err)
+                {
+                    console.log("Error: deleting post", err);
+                    res.status(500).send('Internal Server Error');
+                }
+                else if(result.affectedRows)
+                    res.status(200).json(result);
+                else
+                    res.status(404).send("No categories deleted");
+            });
+        }
     });
 };
 

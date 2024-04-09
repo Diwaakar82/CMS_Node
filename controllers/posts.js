@@ -24,6 +24,7 @@ const createPost = (req, res) => {
     if(!title || !description)
     {
         res.status(400).send("All fields mandatory");
+        return;
     }
 
     if(req.user.userId)
@@ -33,6 +34,7 @@ const createPost = (req, res) => {
             {
                 console.log('Error inserting post:', err);
                 res.status(500).send('Internal Server Error');
+                return;
             }
 
             const postId = result.insertId;
@@ -46,11 +48,12 @@ const createPost = (req, res) => {
                     {
                         console.log('Error inserting post:', err);
                         res.status(500).send('Internal Server Error');
+                        return;
                     }
+
+                    res.status(200).json(result);
                 });
             }
-
-            res.status(200).json(result);
         });
     }
     else
@@ -98,7 +101,7 @@ const getPost = (req, res) => {
 //@route PATCH /posts/:id
 //@access private
 const updatePost = (req, res) => {
-    const postId = req.params.id;
+    const postId = parseInt(req.params.id, 10);
     const { title, description, category_ids } = req.body;
 
     connection.query("SELECT * FROM POSTS WHERE id = ?", [postId], (err, result) => {
@@ -106,6 +109,12 @@ const updatePost = (req, res) => {
         {
             console.log("Error: updating post");
             res.status(500).send('Internal Server Error');
+            return;
+        }
+
+        if(!result.length)
+        {
+            res.status(404).send("Post doesn't exist");
             return;
         }
 
@@ -130,27 +139,27 @@ const updatePost = (req, res) => {
                     res.status(500).send('Internal Server Error');
                     return;
                 }
-            });
-    
-            if (category_ids && category_ids.length > 0)
-            {
-                const categoryInsertValues = category_ids.map(categoryId => [categoryId, postId]);
-    
-                connection.query("INSERT INTO CATEGORIES_POSTS VALUES ?", [categoryInsertValues], (err) => {
-                    if(err)
-                    {
-                        console.log('Error updating post:', err);
-                        res.status(500).send('Internal Server Error');
-                        return;
-                    }
-                });
-            }
-    
-            res.status(200).json(result);
+
+                if (category_ids && category_ids.length > 0)
+                {
+                    const categoryInsertValues = category_ids.map(categoryId => [categoryId, postId]);
+        
+                    connection.query("INSERT INTO CATEGORIES_POSTS VALUES ?", [categoryInsertValues], (err) => {
+                        if(err)
+                        {
+                            console.log('Error updating post:', err);
+                            res.status(500).send('Internal Server Error');
+                            return;
+                        }
+
+                        res.status(200).json(result);
+                    });
+                }
+                else
+                    res.status(200).json(result);
+            }); 
         });
     });
-
-    
 };
 
 //@desc Delete post
@@ -167,28 +176,17 @@ const deletePost = (req, res) => {
             return;
         }
 
+        if(!result.length)
+        {
+            res.status(404).send("Post doesn't exist");
+            return;
+        }
+
         if(result[0] && result[0].userId !== req.user.userId)
         {
             res.status(403).send("User can't delete other user posts");
             return;
         }
-
-
-        connection.query("DELETE FROM COMMENTS WHERE post_id = ?", [postId], (err, result) => {
-            if(err)
-            {
-                console.log("Error: deleting post comments", err);
-                res.status(500).send('Internal Server Error');
-            }
-        });
-
-        connection.query("DELETE FROM CATEGORIES_POSTS WHERE post_id = ?", [postId], (err, result) => {
-            if(err)
-            {
-                console.log("Error: deleting join table", err);
-                res.status(500).send('Internal Server Error');
-            }
-        });
 
         connection.query("DELETE FROM POSTS WHERE id = ?", [postId], (err, result) => {
             if(err)
@@ -250,7 +248,7 @@ const getComment = (req, res) => {
 //@access private
 const updateComment = (req, res) => {
     const commentId = req.params.id;
-    const { commenter, text } = req.body;
+    const { text } = req.body;
 
     connection.query("SELECT * FROM COMMENTS WHERE id = ?", [commentId], (err, result) => {
         if(err)
@@ -262,11 +260,11 @@ const updateComment = (req, res) => {
 
         if(result[0] && result[0].userId !== req.user.userId)
         {
-            res.status(403).send("User can't update other user posts");
+            res.status(403).send("User can't update other user comments");
             return;
         }
 
-        connection.query("UPDATE COMMENTS SET commenter = ?, text = ? WHERE id = ?", [commenter, text, commentId], (err, result) => {
+        connection.query("UPDATE COMMENTS SET commenter = ?, text = ? WHERE id = ?", [req.user.username, text, commentId], (err, result) => {
             if(err)
             {
                 console.log('Error updating comment:', err);
@@ -294,7 +292,7 @@ const deleteComment = (req, res) => {
 
         if(result[0] && result[0].C_uid !== req.user.userId && result[0].P_uid !== req.user.userId)
         {
-            res.status(403).send("User can't update other user posts");
+            res.status(403).send("User can't delete other user posts");
             return;
         }
         

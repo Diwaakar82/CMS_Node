@@ -59,7 +59,8 @@ const deleteLike = (req, res) => {
             res.status(404).send("Like not found");
             return;
         }
-        if(result[0] && result[0].userId !== req.user.userId)
+        
+        if(result[0].userId !== req.user.userId)
         {
             res.status(403).send("User can't delete other user likes");
             return;

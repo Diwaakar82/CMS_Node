@@ -89,11 +89,4 @@ const current_user = (req, res) => {
     });
 };
 
-//@desc Update current user
-//@route PUT/PATCH /users/current
-// @access private
-const update_user = (req, res) => {
-
-};
-
-module.exports = { signin, login, current_user, update_user };
+module.exports = { signin, login, current_user };
