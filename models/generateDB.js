@@ -1,9 +1,10 @@
 const connection = require("../models/db.js");
 
+
 const createDB = () => {
 	connection.query("CREATE DATABASE CMS", (err) => {
         if(err)
-            console.log("Error creating DB");
+            console.log("Error creating DB", err);
 		else
 			console.log("Created database succesfully");
     });
