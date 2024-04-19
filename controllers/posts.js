@@ -54,6 +54,10 @@ const createPost = (req, res) => {
                     res.status(200).json(result);
                 });
             }
+            else
+            {
+                res.status(200).json(result);
+            }
         });
     }
     else

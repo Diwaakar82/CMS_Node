@@ -11,7 +11,7 @@ router.route("/:post_id/comments/:id").get(getComment)
 //Private routes
 router.use(validateToken);
 router.route("/").post(createPost);
-router.route("/:id").put(updatePost).patch(updatePost).delete(deletePost);
+router.route("/:id(\\d+)").put(updatePost).patch(updatePost).delete(deletePost);
 router.route("/:post_id/comments").post(createComment);
 router.route("/:post_id/comments/:id").put(updateComment).patch(updateComment).delete(deleteComment);
 
