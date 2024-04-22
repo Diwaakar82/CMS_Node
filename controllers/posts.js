@@ -98,7 +98,7 @@ const createPost = (req, res) => {
 const getPost = (req, res) => {
     const postId = req.params.id;
 
-    connection.query("SELECT * FROM POSTS WHERE id = ?", [postId], (err, result) => {
+    connection.query("SELECT * FROM POSTS WHERE id = ?", [postId], (err, results) => {
         if(err)
         {
             console.log("Error: getting post");
@@ -109,6 +109,20 @@ const getPost = (req, res) => {
         {
             res.status(404).json({ error: "Post not found" });
             return;
+        }
+        else
+        {
+            connection.query("SELECT COUNT(*) AS LIKES FROM LIKES WHERE postId = ?", [post.ID], (error, result) => {
+                if(error)
+                {
+                    console.log("Error: getting likes");
+                    res.status(500).send('Internal Server Error');  
+                }
+                else
+                {
+                    results["LIKES"] = result[0]['LIKES'];
+                }
+            })
         }
 
         connection.query("SELECT commenter, text FROM COMMENTS WHERE post_id = ?", [postId], (err, comments) => {
@@ -123,6 +137,7 @@ const getPost = (req, res) => {
                 result[0]["comments"] = comments;
             }
             res.status(200).json(result);
+            console.log(result);
         });
     });
 };
