@@ -1,3 +1,4 @@
+const { resolve } = require("path");
 const connection = require("../models/db.js");
 
 //@desc Show posts
@@ -11,7 +12,32 @@ const getPosts = (req, res) => {
             res.status(500).send('Internal Server Error');
         }
         else
-            res.status(200).json(results);
+        {
+            const posts = results.map(post => {
+                return new Promise((resolve, reject) => {
+                    connection.query("SELECT COUNT(*) AS LIKES FROM LIKES WHERE postId = ?", [post.ID], (error, result) => {
+                        if(error)
+                        {
+                            console.log("Error: getting likes");
+                            reject(error);  
+                        }
+                        else
+                        {
+                            post["LIKES"] = result[0]['LIKES'];
+                            resolve();
+                        }
+                    })
+                })  
+            })
+            Promise.all(posts)
+            .then(() => {
+                res.status(200).json(results);
+            })
+            .catch(error => {
+                console.error("Error processing likes:", error);
+                res.status(500).send('Internal Server Error');
+            });
+        }
     });
 };
 

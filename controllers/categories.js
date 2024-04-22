@@ -11,9 +11,12 @@ const getCategories = (req, res) => {
             res.status(500).send('Internal Server Error');
         }
         else if(results.length)
+        {
             res.status(200).json(results);
+            console.log(results);
+        }
         else
-        res.status(404).send("No category found");
+            res.status(404).send("No category found");
     });
 };
 
@@ -47,7 +50,10 @@ const getCategory = (req, res) => {
             res.status(500).send('Internal Server Error');
         }
         else if(result.length)
+        {
+            console.log(result);
             res.status(200).json(result);
+        }
         else
             res.status(404).send("No posts in category");
     });
