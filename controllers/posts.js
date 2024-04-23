@@ -105,14 +105,14 @@ const getPost = (req, res) => {
             res.status(500).send('Internal Server Error');
         }
 
-        if (!result.length) 
+        if (!results.length) 
         {
             res.status(404).json({ error: "Post not found" });
             return;
         }
         else
         {
-            connection.query("SELECT COUNT(*) AS LIKES FROM LIKES WHERE postId = ?", [post.ID], (error, result) => {
+            connection.query("SELECT COUNT(*) AS LIKES FROM LIKES WHERE postId = ?", [postId], (error, result) => {
                 if(error)
                 {
                     console.log("Error: getting likes");
@@ -120,27 +120,39 @@ const getPost = (req, res) => {
                 }
                 else
                 {
-                    results["LIKES"] = result[0]['LIKES'];
+                    results[0]["LIKES"] = result[0]['LIKES'];
+
+                    connection.query("SELECT * FROM COMMENTS WHERE post_id = ?", [postId], (err, comments) => {
+                        if(err)
+                        {
+                            console.log("Error: getting comments");
+                            res.status(500).send('Internal Server Error');
+                        }
+            
+                        if(comments.length)
+                        {
+                            results[0]["comments"] = comments;
+                        }
+
+                        connection.query("SELECT C.id, C.title FROM CATEGORIES C INNER JOIN CATEGORIES_POSTS CP ON C.ID = CP.category_id WHERE post_id = ?", [postId], (err, categories) => {
+                            if(err)
+                            {
+                                console.log("Error: getting categories");
+                                res.status(500).send('Internal Server Error');
+                            }
+                            else
+                            {
+                                results[0]['categories'] = categories;
+                                res.status(200).json(results);
+                            }
+                        });
+                    });
                 }
-            })
-        }
-
-        connection.query("SELECT commenter, text FROM COMMENTS WHERE post_id = ?", [postId], (err, comments) => {
-            if(err)
-            {
-                console.log("Error: getting comments");
-                res.status(500).send('Internal Server Error');
-            }
-
-            if(comments.length)
-            {
-                result[0]["comments"] = comments;
-            }
-            res.status(200).json(result);
-            console.log(result);
-        });
+            });
+        }   
     });
-};
+}
+
 
 //@desc Update post
 //@route PATCH /posts/:id
@@ -152,7 +164,7 @@ const updatePost = (req, res) => {
     connection.query("SELECT * FROM POSTS WHERE id = ?", [postId], (err, result) => {
         if(err)
         {
-            console.log("Error: updating post");
+            console.log("Error: updating post 1");
             res.status(500).send('Internal Server Error');
             return;
         }
@@ -172,7 +184,7 @@ const updatePost = (req, res) => {
         connection.query("UPDATE POSTS SET title = ?, description = ? WHERE id = ?", [title, description, postId], (err, result) => {
             if(err)
             {
-                console.log("Error: updating post");
+                console.log("Error: updating post 2", req.body);
                 res.status(500).send('Internal Server Error');
                 return;
             }
