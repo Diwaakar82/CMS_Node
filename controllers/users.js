@@ -62,7 +62,7 @@ const login = (req, res) => {
             if(await bcrypt.compare(password, hashedPassword))
             {
                 const token = genAccessToken(email, result[0].userId, result[0].username);
-                res.json({accessToken: token});
+                res.json({accessToken: token, id: result[0].userId, name: result[0].username});
             }
             else
             {
